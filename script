@@ -1,0 +1,55 @@
+// ====== EDIT THESE ======
+// Paste your Google Docs / Google Forms RSVP link here:
+const RSVP_URL = "https://docs.google.com/";
+
+// Hero background image (inside the "images" folder):
+const HERO_IMAGE = "background.png";
+// ========================
+
+// Point both RSVP buttons to the link
+["rsvpMain", "rsvpFloat"].forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) el.href = RSVP_URL;
+});
+
+// Load the hero background photo, then fade it in.
+// If the file is missing, the hero simply keeps its navy gradient.
+(function loadHeroPhoto() {
+  const photo = document.getElementById("heroPhoto");
+  if (!photo) return;
+  const probe = new Image();
+  probe.onload = () => {
+    photo.style.setProperty("--hero-img", 'url("' + HERO_IMAGE + '")');
+    photo.style.backgroundImage = 'url("' + HERO_IMAGE + '")';
+    requestAnimationFrame(() => photo.classList.add("loaded"));
+  };
+  probe.onerror = () => console.warn("Hero image not found: " + HERO_IMAGE);
+  probe.src = HERO_IMAGE;
+})();
+
+// Show a clean placeholder if a photo is missing
+function markEmpty(img) {
+  const shot = img.closest(".shot");
+  if (!shot) return;
+  shot.dataset.label = img.alt || "Photo";
+  shot.classList.add("empty");
+  img.remove();
+}
+document.querySelectorAll(".shot img").forEach((img) => {
+  if (img.complete && img.naturalWidth === 0) markEmpty(img);
+  else img.addEventListener("error", () => markEmpty(img));
+});
+
+// Fade-in on scroll
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("visible");
+        observer.unobserve(entry.target);
+      }
+    });
+  },
+  { threshold: 0.12 }
+);
+document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
